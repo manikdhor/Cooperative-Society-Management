@@ -1,0 +1,129 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+pnpm-lock.yaml
+
+# Production
+/build
+/dist
+/.next
+/out
+
+# Misc
+.DS_Store
+*.pem
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Testing
+/coverage
+.nyc_output/
+*.lcov
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Database
+*.sqlite
+*.sqlite3
+mysql_data/
+postgres_data/
+rabbitmq_data/
+redis_data/
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+
+# OS
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.exe
+*.dll
+
+# Logs
+logs/
+*.log
+lerna-debug.log*
+
+# Package manager lockfiles (except pnpm-lock.yaml which we keep)
+package-lock.json
+yarn.lock
+
+# IntelliJ
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Terminal
+.bash_history
+.zsh_history
+
+# Local database snapshots
+db_snapshots/
+backups/
+
+# Migration files (generated)
+src/migration/*.ts
+!src/migration/.gitkeep
+
+# Generated files
+src/generated/
+generated/
+
+# Uploads directory
+uploads/
+public/uploads/
+
+# System files
+.env.*.bak
+.env.backup
