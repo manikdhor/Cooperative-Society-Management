@@ -215,3 +215,303 @@ The web application is built with:
 ## License
 
 MIT
+
+---
+
+## 🚀 Deployment Guide
+
+### Pre-Deployment Checklist
+
+Before deploying, run the comprehensive pre-deployment check:
+
+```bash
+# Run all pre-deployment validations
+./scripts/pre-deploy-check.sh
+```
+
+This script will:
+- ✅ Verify all dependencies are installed
+- ✅ Run all unit and integration tests
+- ✅ Build all packages
+- ✅ Validate Docker configuration
+- ✅ Check environment setup
+
+### Database Setup
+
+#### Option 1: PostgreSQL (Recommended for Production)
+```bash
+# Add PostgreSQL to your services
+npm install pg @types/pg
+
+# Environment variables for .env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=cooperative_society
+DB_USER=postgres
+DB_PASSWORD=your_secure_password
+```
+
+#### Option 2: MongoDB
+```bash
+# Add MongoDB to your services
+npm install mongodb @types/mongodb
+
+# Environment variables for .env
+DB_HOST=localhost
+DB_PORT=27017
+DB_NAME=cooperative_society
+DB_USER=mongodb
+DB_PASSWORD=your_secure_password
+```
+
+#### Option 3: SQLite (Development/Small Deployments)
+```bash
+# Add SQLite to your services
+npm install sqlite3 @types/sqlite3
+
+# Environment variable for .env
+DB_PATH=./data/cooperative_society.db
+```
+
+### Deployment Options
+
+#### 1. Docker Compose (Recommended for Self-Hosting)
+```bash
+# Copy environment file
+cp .env.example .env
+# Edit .env with your configuration
+
+# Deploy with production configuration
+./scripts/deploy.sh
+# Or manually:
+docker-compose -f docker-compose.prod.yml up -d
+
+# Check health
+./scripts/health-check.sh
+```
+
+**Services:**
+- API Gateway: http://localhost:3000
+- Member Service: http://localhost:3001  
+- Loan Service: http://localhost:3002
+- Web App: http://localhost
+
+#### 2. Railway (Cloud Platform)
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and deploy
+railway login
+./scripts/deploy.sh
+# Choose option 2 for Railway deployment
+```
+
+#### 3. DigitalOcean App Platform
+```bash
+# Install doctl
+curl -sL https://github.com/digitalocean/doctl/releases/latest/download/doctl-linux-amd64.tar.gz | tar xz
+sudo mv doctl /usr/local/bin
+
+# Deploy
+./scripts/deploy.sh
+# Choose option 3 for DigitalOcean
+```
+
+#### 4. Vercel + Railway (Hybrid)
+```bash
+# Deploy frontend to Vercel
+cd apps/web
+vercel --prod
+
+# Deploy backend services to Railway
+./scripts/deploy.sh
+# Choose option 2 for Railway services
+```
+
+#### 5. AWS Full Stack
+```bash
+# Install AWS CLI
+curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Deploy to ECS
+./scripts/deploy.sh
+# Choose option 4 for AWS ECS
+```
+
+### Environment Configuration
+
+Create your `.env` file from the example:
+
+```bash
+cp .env.example .env
+```
+
+**Required variables for production:**
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+- `JWT_SECRET` (generate a secure random string)
+- `NODE_ENV=production`
+
+**Optional variables:**
+- `REDIS_HOST`, `REDIS_PORT` (for caching)
+- `SMTP_*` (for email notifications)
+- `SENTRY_DSN` (for error tracking)
+
+### Health Monitoring
+
+After deployment, monitor your services:
+
+```bash
+# Comprehensive health check
+./scripts/health-check.sh
+
+# Monitor logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Individual service logs
+docker-compose -f docker-compose.prod.yml logs -f api-gateway
+```
+
+### SSL/HTTPS Setup
+
+#### Option 1: Nginx Reverse Proxy
+```bash
+# Add to docker-compose.prod.yml
+nginx:
+  image: nginx:alpine
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./ssl:/etc/nginx/ssl:ro
+```
+
+#### Option 2: Cloudflare (Recommended)
+1. Point your domain to Cloudflare
+2. Enable SSL/TLS encryption
+3. Configure proxy rules for your services
+
+### Scaling Considerations
+
+#### Horizontal Scaling
+```yaml
+# docker-compose.prod.yml
+services:
+  api-gateway:
+    deploy:
+      replicas: 3
+  member-service:
+    deploy:
+      replicas: 2
+  loan-service:
+    deploy:
+      replicas: 2
+```
+
+#### Load Balancing
+- Use Nginx or cloud load balancers
+- Configure health checks
+- Set up auto-scaling policies
+
+### Backup Strategy
+
+#### Database Backups
+```bash
+# PostgreSQL backup
+docker exec coop-postgres pg_dump -U postgres cooperative_society > backup_$(date +%Y%m%d).sql
+
+# Automated backup script
+./scripts/backup-database.sh
+```
+
+#### Application Backups
+```bash
+# Backup Docker volumes
+docker run --rm -v cooperative_society_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/postgres_backup.tar.gz -C /data .
+```
+
+### Monitoring & Logging
+
+#### Application Monitoring
+```bash
+# Add monitoring (example with PM2)
+npm install -g pm2
+
+# PM2 ecosystem file for production
+cat > ecosystem.config.js << EOF
+module.exports = {
+  apps: [
+    { name: 'api-gateway', script: 'dist/index.js', cwd: 'apps/api-gateway' },
+    { name: 'member-service', script: 'dist/index.js', cwd: 'apps/member-service' },
+    { name: 'loan-service', script: 'dist/index.js', cwd: 'apps/loan-service' }
+  ]
+};
+EOF
+```
+
+#### Log Management
+```bash
+# Configure log rotation
+sudo nano /etc/logrotate.d/cooperative-society
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs --tail=100
+```
+
+### Security Checklist
+
+- [ ] Change default passwords
+- [ ] Set up SSL certificates
+- [ ] Configure firewall rules
+- [ ] Enable rate limiting
+- [ ] Set up monitoring alerts
+- [ ] Regular security updates
+- [ ] Backup encryption
+- [ ] Access control policies
+
+### Troubleshooting
+
+#### Common Issues
+
+**Services not starting:**
+```bash
+# Check logs
+docker-compose -f docker-compose.prod.yml logs [service-name]
+
+# Check ports
+netstat -tulpn | grep :3000
+```
+
+**Database connection issues:**
+```bash
+# Test database connection
+docker exec -it coop-postgres psql -U postgres -d cooperative_society
+
+# Check environment variables
+docker exec coop-api-gateway env | grep DB_
+```
+
+**Performance issues:**
+```bash
+# Monitor resource usage
+docker stats
+
+# Check disk space
+df -h
+```
+
+### Support
+
+For deployment issues:
+1. Check the health check script output
+2. Review service logs
+3. Verify environment variables
+4. Check network connectivity
+5. Review this documentation
+
+## License
+
+MIT
